@@ -1,5 +1,5 @@
 rootProject.name = "ThetaTrial"
-include ':app'
-include ':repository'
 include ':entity'
+include ':repository'
 include ':usecase'
+include ':app'
