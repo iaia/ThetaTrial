@@ -1,4 +1,4 @@
-package dev.iaiabot.thetatrial.ui.camera.di
+package dev.iaiabot.thetatrial.di
 
 import dev.iaiabot.thetatrial.ui.camera.CameraViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
