@@ -37,7 +37,7 @@ object Deps {
     }
 
     object Koin {
-        private val koin_version = "3.0.1-beta-2"
+        private val koin_version = "3.0.2"
         val base = "io.insert-koin:koin-android:$koin_version"
         val ext = "io.insert-koin:koin-android-ext:$koin_version"
     }

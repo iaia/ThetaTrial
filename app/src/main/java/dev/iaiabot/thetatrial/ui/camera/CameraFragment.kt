@@ -1,32 +1,32 @@
 package dev.iaiabot.thetatrial.ui.camera
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import dev.iaiabot.thetatrial.R
+import dev.iaiabot.thetatrial.databinding.FragmentCameraBinding
+import org.koin.android.ext.android.inject
 
 class CameraFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = CameraFragment()
-    }
-
-    private lateinit var viewModel: CameraViewModel
+    private lateinit var binding: FragmentCameraBinding
+    private val viewModel: CameraViewModel by inject()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_camera, container, false)
+    ): View {
+        binding = FragmentCameraBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.viewModel = viewModel
+        // TODO: viewLifecycleOwner.lifecycle.addObserver(viewModel)
+        return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(CameraViewModel::class.java)
-        // TODO: Use the ViewModel
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
+    }
 }
