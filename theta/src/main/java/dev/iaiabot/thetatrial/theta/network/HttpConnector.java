@@ -36,147 +36,6 @@ public class HttpConnector {
     private HttpEventListener mHttpEventListener = null;
 
     /**
-     * Constructor
-     *
-     * @param cameraIpAddress IP address of connection destination
-     */
-    public HttpConnector(String cameraIpAddress) {
-        mIpAddress = cameraIpAddress;
-    }
-
-    /**
-     * Acquire storage information of device
-     *
-     * @return Storage information
-     */
-    public StorageInfo getStorageInfo() {
-
-        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
-        JSONObject input = new JSONObject();
-        String responseData;
-        StorageInfo storageInfo = new StorageInfo();
-        InputStream is = null;
-
-        try {
-            // send HTTP POST
-            input.put("name", "camera.getOptions");
-            JSONObject parameters = new JSONObject();
-            JSONArray optionNames = new JSONArray();
-            optionNames.put("remainingPictures");
-            optionNames.put("remainingSpace");
-            optionNames.put("totalSpace");
-            parameters.put("optionNames", optionNames);
-            input.put("parameters", parameters);
-
-            OutputStream os = postConnection.getOutputStream();
-            os.write(input.toString().getBytes());
-            postConnection.connect();
-            os.flush();
-            os.close();
-
-            is = postConnection.getInputStream();
-            responseData = InputStreamToString(is);
-
-            // parse JSON data
-            JSONObject output = new JSONObject(responseData);
-            String status = output.getString("state");
-
-            if (status.equals("done")) {
-                JSONObject results = output.getJSONObject("results");
-                JSONObject options = results.getJSONObject("options");
-                int remainingPictures = options.getInt("remainingPictures");
-                storageInfo.setFreeSpaceInImages(remainingPictures);
-
-                long remainingSpace = options.getLong("remainingSpace");
-                storageInfo.setFreeSpaceInBytes(remainingSpace);
-
-                long totalSpace = options.getLong("totalSpace");
-                storageInfo.setMaxCapacity(totalSpace);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return storageInfo;
-    }
-
-    /**
-     * Acquire device information
-     *
-     * @return Device information
-     */
-    public DeviceInfo getDeviceInfo() {
-        HttpURLConnection getConnection = createHttpConnection("GET", "/osc/info");
-        String responseData;
-        DeviceInfo deviceInfo = new DeviceInfo();
-        InputStream is = null;
-
-        try {
-            // send HTTP GET
-            // this protocol has no input.
-            getConnection.connect();
-
-            is = getConnection.getInputStream();
-            responseData = InputStreamToString(is);
-
-            // parse JSON data
-            JSONObject output = new JSONObject(responseData);
-
-            String model = output.getString("model");
-            deviceInfo.setModel(model);
-
-            String version = output.getString("firmwareVersion");
-            deviceInfo.setDeviceVersion(version);
-
-            String serialNumber = output.getString("serialNumber");
-            deviceInfo.setSerialNumber(serialNumber);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return deviceInfo;
-    }
-
-    /**
-     * Acquire list of media files on device
-     *
-     * @return Media file list
-     */
-    public ArrayList<ImageInfo> getList() {
-        ArrayList<ImageInfo> imageInfos = new ArrayList<>();
-
-        for (int continuation = 0; continuation < 3; continuation++) {
-            ArrayList<ImageInfo> receivedImageInfo = getListInternal(10, imageInfos.size());
-            imageInfos.addAll(receivedImageInfo);
-            if (receivedImageInfo.size() < 10) {
-                break;
-            }
-        }
-
-        return imageInfos;
-    }
-
-    /**
      * Acquire media file list (limited number of items)
      *
      * @param maxReceiveEntry Maximum number of files that can be acquired at once
@@ -270,6 +129,145 @@ public class HttpConnector {
     }
 
     /**
+     * Constructor
+     *
+     * @param cameraIpAddress IP address of connection destination
+     */
+    public HttpConnector(String cameraIpAddress) {
+        mIpAddress = cameraIpAddress;
+    }
+
+
+    /**
+     * Acquire storage information of device
+     * @return Storage information
+     */
+    public StorageInfo getStorageInfo() {
+
+        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
+        JSONObject input = new JSONObject();
+        String responseData;
+        StorageInfo storageInfo = new StorageInfo();
+        InputStream is = null;
+
+        try {
+            // send HTTP POST
+            input.put("name", "camera.getOptions");
+            JSONObject parameters = new JSONObject();
+            JSONArray optionNames = new JSONArray();
+            optionNames.put("remainingPictures");
+            optionNames.put("remainingSpace");
+            optionNames.put("totalSpace");
+            parameters.put("optionNames", optionNames);
+            input.put("parameters", parameters);
+
+            OutputStream os = postConnection.getOutputStream();
+            os.write(input.toString().getBytes());
+            postConnection.connect();
+            os.flush();
+            os.close();
+
+            is = postConnection.getInputStream();
+            responseData = InputStreamToString(is);
+
+            // parse JSON data
+            JSONObject output = new JSONObject(responseData);
+            String status = output.getString("state");
+
+            if (status.equals("done")) {
+                JSONObject results = output.getJSONObject("results");
+                JSONObject options = results.getJSONObject("options");
+                int remainingPictures = options.getInt("remainingPictures");
+                storageInfo.setFreeSpaceInImages(remainingPictures);
+
+                long remainingSpace = options.getLong("remainingSpace");
+                storageInfo.setFreeSpaceInBytes(remainingSpace);
+
+                long totalSpace = options.getLong("totalSpace");
+                storageInfo.setMaxCapacity(totalSpace);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return storageInfo;
+    }
+
+    /**
+     * Acquire device information
+     * @return Device information
+     */
+    public DeviceInfo getDeviceInfo() {
+        HttpURLConnection getConnection = createHttpConnection("GET", "/osc/info");
+        String responseData;
+        DeviceInfo deviceInfo = new DeviceInfo();
+        InputStream is = null;
+
+        try {
+            // send HTTP GET
+            // this protocol has no input.
+            getConnection.connect();
+
+            is = getConnection.getInputStream();
+            responseData = InputStreamToString(is);
+
+            // parse JSON data
+            JSONObject output = new JSONObject(responseData);
+
+            String model = output.getString("model");
+            deviceInfo.setModel(model);
+
+            String version = output.getString("firmwareVersion");
+            deviceInfo.setDeviceVersion(version);
+
+            String serialNumber = output.getString("serialNumber");
+            deviceInfo.setSerialNumber(serialNumber);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return deviceInfo;
+    }
+
+    /**
+     * Acquire list of media files on device
+     * @return Media file list
+     */
+    public ArrayList<ImageInfo> getList() {
+        ArrayList<ImageInfo> imageInfos = new ArrayList<>();
+
+        for (int continuation = 0; continuation < 3; continuation++) {
+            ArrayList<ImageInfo> receivedImageInfo = getListInternal(10, imageInfos.size());
+            imageInfos.addAll(receivedImageInfo);
+            if (receivedImageInfo.size() < 10) {
+                break;
+            }
+        }
+
+        return imageInfos;
+    }
+
+    /**
      * Acquire thumbnail image
      *
      * @param fileId File ID
@@ -309,9 +307,62 @@ public class HttpConnector {
     }
 
     /**
+     * Acquire raw data of specified image
+     *
+     * @param fileId   File ID
+     * @param listener Listener for receiving received data count
+     * @return Image data
+     */
+    public ImageData getImage(String fileId, HttpDownloadListener listener) {
+        HttpURLConnection postConnection = null;
+        try {
+            postConnection = (HttpURLConnection) new URL(fileId).openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ImageData imageData = new ImageData();
+        int totalSize = 0;
+        InputStream is = null;
+
+        try {
+            // send HTTP GET
+            postConnection.connect();
+
+            totalSize = postConnection.getContentLength();
+            listener.onTotalSize(totalSize);
+            is = postConnection.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[2048];
+            int length;
+
+            while ((length = is.read(buffer)) >= 0) {
+                baos.write(buffer, 0, length);
+                listener.onDataReceived(length);
+            }
+            byte[] rawData = baos.toByteArray();
+            imageData.setRawData(rawData);
+
+            XMP xmp = new XMP(rawData);
+            imageData.setPitch(xmp.getPosePitchDegrees());
+            imageData.setRoll(xmp.getPoseRollDegrees());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return imageData;
+    }
+
+    /**
      * Take photo<p>
      * After shooting, the status is checked for each {@link HttpConnector#CHECK_STATUS_PERIOD_MS} and the listener notifies you of the status.
-     *
      * @param listener Post-shooting event listener
      * @return Shooting request results
      */
@@ -384,175 +435,9 @@ public class HttpConnector {
     }
 
     /**
-     * Check still image shooting status
-     *
-     * @param commandId Command ID for shooting still images
-     * @return ID of saved file (null is returned if the file is not saved)
-     */
-    private String checkCaptureStatus(String commandId) {
-        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/status");
-        JSONObject input = new JSONObject();
-        String responseData;
-        String capturedFileId = null;
-        InputStream is = null;
-
-        try {
-            // send HTTP POST
-            input.put("id", commandId);
-
-            OutputStream os = postConnection.getOutputStream();
-            os.write(input.toString().getBytes());
-            postConnection.connect();
-            os.flush();
-            os.close();
-
-            is = postConnection.getInputStream();
-            responseData = InputStreamToString(is);
-
-            // parse JSON data
-            JSONObject output = new JSONObject(responseData);
-            String status = output.getString("state");
-
-            if (status.equals("done")) {
-                JSONObject results = output.getJSONObject("results");
-                capturedFileId = results.getString("fileUrl");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return capturedFileId;
-    }
-
-    /**
-     * Acquire raw data of specified image
-     *
-     * @param fileId   File ID
-     * @param listener Listener for receiving received data count
-     * @return Image data
-     */
-    public ImageData getImage(String fileId, HttpDownloadListener listener) {
-        HttpURLConnection postConnection = null;
-        try {
-            postConnection = (HttpURLConnection) new URL(fileId).openConnection();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        ImageData imageData = new ImageData();
-        int totalSize = 0;
-        InputStream is = null;
-
-        try {
-            // send HTTP GET
-            postConnection.connect();
-
-            totalSize = postConnection.getContentLength();
-            listener.onTotalSize(totalSize);
-            is = postConnection.getInputStream();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[2048];
-            int length;
-
-            while ((length = is.read(buffer)) >= 0) {
-                baos.write(buffer, 0, length);
-                listener.onDataReceived(length);
-            }
-            byte[] rawData = baos.toByteArray();
-            imageData.setRawData(rawData);
-
-            XMP xmp = new XMP(rawData);
-            imageData.setPitch(xmp.getPosePitchDegrees());
-            imageData.setRoll(xmp.getPoseRollDegrees());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return imageData;
-    }
-
-    /**
-     * Acquire live view stream
-     *
-     * @return Stream for receiving data
-     * @throws IOException
-     */
-    public InputStream getLivePreview() throws IOException, JSONException {
-
-        // set capture mode to image
-        setImageCaptureMode();
-
-        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
-        JSONObject input = new JSONObject();
-        InputStream is = null;
-
-        try {
-            // send HTTP POST
-            input.put("name", "camera.getLivePreview");
-            JSONObject parameters = new JSONObject();
-
-            OutputStream os = postConnection.getOutputStream();
-            os.write(input.toString().getBytes());
-            postConnection.connect();
-            os.flush();
-            os.close();
-
-            is = postConnection.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-            String errorMessage = null;
-            InputStream es = postConnection.getErrorStream();
-            try {
-                if (es != null) {
-                    String errorData = InputStreamToString(es);
-                    JSONObject output = new JSONObject(errorData);
-                    JSONObject errors = output.getJSONObject("error");
-                    errorMessage = errors.getString("message");
-                }
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            } catch (JSONException e1) {
-                e1.printStackTrace();
-            } finally {
-                if (es != null) {
-                    try {
-                        es.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-            throw e;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            throw e;
-        }
-
-        return is;
-    }
-
-    /**
      * Delete specified file
-     *
      * @param deletedFileId File ID
-     * @param listener      Listener for receiving deletion results
+     * @param listener Listener for receiving deletion results
      */
     public void deleteFile(String deletedFileId, HttpEventListener listener) {
 
@@ -613,6 +498,57 @@ public class HttpConnector {
                 }
             }
         }
+    }
+
+    /**
+     * Check still image shooting status
+     *
+     * @param commandId Command ID for shooting still images
+     * @return ID of saved file (null is returned if the file is not saved)
+     */
+    private String checkCaptureStatus(String commandId) {
+        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/status");
+        JSONObject input = new JSONObject();
+        String responseData;
+        String capturedFileId = null;
+        InputStream is = null;
+
+        try {
+            // send HTTP POST
+            input.put("id", commandId);
+
+            OutputStream os = postConnection.getOutputStream();
+            os.write(input.toString().getBytes());
+            postConnection.connect();
+            os.flush();
+            os.close();
+
+            is = postConnection.getInputStream();
+            responseData = InputStreamToString(is);
+
+            // parse JSON data
+            JSONObject output = new JSONObject(responseData);
+            String status = output.getString("state");
+
+            if (status.equals("done")) {
+                JSONObject results = output.getJSONObject("results");
+                capturedFileId = results.getString("fileUrl");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return capturedFileId;
     }
 
     /**
@@ -683,6 +619,66 @@ public class HttpConnector {
     }
 
     /**
+     * Acquire live view stream
+     *
+     * @return Stream for receiving data
+     * @throws IOException
+     */
+    public InputStream getLivePreview() throws IOException, JSONException {
+
+        // set capture mode to image
+        setImageCaptureMode();
+
+        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
+        JSONObject input = new JSONObject();
+        InputStream is = null;
+
+        try {
+            // send HTTP POST
+            input.put("name", "camera.getLivePreview");
+            JSONObject parameters = new JSONObject();
+
+            OutputStream os = postConnection.getOutputStream();
+            os.write(input.toString().getBytes());
+            postConnection.connect();
+            os.flush();
+            os.close();
+
+            is = postConnection.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+            String errorMessage = null;
+            InputStream es = postConnection.getErrorStream();
+            try {
+                if (es != null) {
+                    String errorData = InputStreamToString(es);
+                    JSONObject output = new JSONObject(errorData);
+                    JSONObject errors = output.getJSONObject("error");
+                    errorMessage = errors.getString("message");
+                }
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            } finally {
+                if (es != null) {
+                    try {
+                        es.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+            throw e;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return is;
+    }
+
+    /**
      * Specify shooting size
      *
      * @param imageSize Shooting size
@@ -742,6 +738,62 @@ public class HttpConnector {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    /**
+     * Generate HTTP connection
+     *
+     * @param method Method
+     * @param path   Path
+     * @return HTTP Connection instance
+     */
+    private HttpURLConnection createHttpConnection(String method, String path) {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(createUrl(path));
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setDoInput(true);
+
+            if (method.equals("POST")) {
+                connection.setRequestMethod(method);
+                connection.setDoOutput(true);
+            }
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return connection;
+    }
+
+    public enum ShootResult {
+        SUCCESS, FAIL_CAMERA_DISCONNECTED, FAIL_STORE_FULL, FAIL_DEVICE_BUSY
+    }
+
+    private class CapturedTimerTask extends TimerTask {
+        private String mCommandId;
+
+        public void setCommandId(String commandId) {
+            mCommandId = commandId;
+        }
+
+        @Override
+        public void run() {
+            String capturedFileId = checkCaptureStatus(mCommandId);
+
+            if (capturedFileId != null) {
+                mHttpEventListener.onCheckStatus(true);
+                mCheckStatusTimer.cancel();
+                mHttpEventListener.onObjectChanged(capturedFileId);
+                mHttpEventListener.onCompleted();
+            } else {
+                mHttpEventListener.onCheckStatus(false);
             }
         }
     }
@@ -826,7 +878,6 @@ public class HttpConnector {
 
     /**
      * Acquire device status
-     *
      * @return Last saved file
      */
     private String getState() {
@@ -866,7 +917,6 @@ public class HttpConnector {
 
     /**
      * Check for updates to device status
-     *
      * @return true:Update available, false:No update available
      */
     private boolean isUpdate() {
@@ -920,7 +970,6 @@ public class HttpConnector {
 
     /**
      * Generate connection destination URL
-     *
      * @param path Path
      * @return URL
      */
@@ -931,80 +980,6 @@ public class HttpConnector {
         sb.append(path);
 
         return sb.toString();
-    }
-
-    /**
-     * Generate HTTP connection
-     *
-     * @param method Method
-     * @param path   Path
-     * @return HTTP Connection instance
-     */
-    private HttpURLConnection createHttpConnection(String method, String path) {
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL(createUrl(path));
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setDoInput(true);
-
-            if (method.equals("POST")) {
-                connection.setRequestMethod(method);
-                connection.setDoOutput(true);
-            }
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return connection;
-    }
-
-    /**
-     * Convert input stream to string
-     *
-     * @param is InputStream
-     * @return String
-     * @throws IOException IO error
-     */
-    private String InputStreamToString(InputStream is) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-        StringBuilder sb = new StringBuilder();
-        String lineData;
-        while ((lineData = br.readLine()) != null) {
-            sb.append(lineData);
-        }
-        br.close();
-        return sb.toString();
-    }
-
-    public enum ShootResult {
-        SUCCESS, FAIL_CAMERA_DISCONNECTED, FAIL_STORE_FULL, FAIL_DEVICE_BUSY
-    }
-
-    private class CapturedTimerTask extends TimerTask {
-        private String mCommandId;
-
-        public void setCommandId(String commandId) {
-            mCommandId = commandId;
-        }
-
-        @Override
-        public void run() {
-            String capturedFileId = checkCaptureStatus(mCommandId);
-
-            if (capturedFileId != null) {
-                mHttpEventListener.onCheckStatus(true);
-                mCheckStatusTimer.cancel();
-                mHttpEventListener.onObjectChanged(capturedFileId);
-                mHttpEventListener.onCompleted();
-            } else {
-                mHttpEventListener.onCheckStatus(false);
-            }
-        }
     }
 
     /**
@@ -1029,5 +1004,23 @@ public class HttpConnector {
                 mFingerPrint = null;
             }
         }
+    }
+
+    /**
+     * Convert input stream to string
+     *
+     * @param is InputStream
+     * @return String
+     * @throws IOException IO error
+     */
+    private String InputStreamToString(InputStream is) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        String lineData;
+        while ((lineData = br.readLine()) != null) {
+            sb.append(lineData);
+        }
+        br.close();
+        return sb.toString();
     }
 }

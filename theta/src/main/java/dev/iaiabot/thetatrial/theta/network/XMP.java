@@ -22,7 +22,6 @@ public class XMP {
 
     /**
      * Constructor
-     *
      * @param original Raw data of image
      */
     public XMP(byte[] original) {
@@ -63,7 +62,6 @@ public class XMP {
 
     /**
      * Acquire pitch angle set for XMP
-     *
      * @return Pitch angle
      */
     public Double getPosePitchDegrees() {
@@ -72,7 +70,6 @@ public class XMP {
 
     /**
      * Acquire roll angle set for XMP
-     *
      * @return Roll angle
      */
     public Double getPoseRollDegrees() {

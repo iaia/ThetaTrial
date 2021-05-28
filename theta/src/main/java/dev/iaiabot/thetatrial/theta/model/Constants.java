@@ -9,14 +9,10 @@ public interface Constants {
      * Radius of sphere for photo
      */
     static final int TEXTURE_SHELL_RADIUS = 2;
-    /**
-     * Number of sphere polygon partitions for photo, which must be an even number
-     */
+    /** Number of sphere polygon partitions for photo, which must be an even number */
     static final int SHELL_DIVIDES = 40;
 
-    /**
-     * Maximum value that can be specified as the camera FOV variable
-     */
+    /** Maximum value that can be specified as the camera FOV variable */
     static final int CAMERA_FOV_DEGREE_MAX = 100;
     /**
      * Minimum value that can be specified as the camera FOV variable
@@ -65,6 +61,6 @@ public interface Constants {
     /**
      * Movement amount derivative parameter when inertia setting is large (Y axis direction)
      */
-    static final float ON_FLING_DIVIDER_Y_FOR_INERTIA_100 = (65.0f * 10.0f);
+    static final float ON_FLING_DIVIDER_Y_FOR_INERTIA_100 = (65.0f*10.0f);
 
 }

@@ -8,7 +8,6 @@ public interface HttpDownloadListener {
      * Total byte count
      */
     void onTotalSize(long totalSize);
-
     /**
      * Received byte count
      */

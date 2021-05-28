@@ -6,14 +6,12 @@ package dev.iaiabot.thetatrial.theta.network;
 public interface HttpEventListener {
     /**
      * Notifies you of the device status check results
-     *
      * @param newStatus true:Update available, false;No update available
      */
     void onCheckStatus(boolean newStatus);
 
     /**
      * Notifies you when the file is saved
-     *
      * @param latestCapturedFileId ID of saved file
      */
     void onObjectChanged(String latestCapturedFileId);
