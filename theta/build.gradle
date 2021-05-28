@@ -35,20 +35,9 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     implementation Deps.Kotlin.stdLib
     implementation Deps.AndroidX.coreKtx
     implementation Deps.AndroidX.appCompat
-
-    // for theta sdk
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.4.4'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.4.4'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.4.4'
-    implementation 'com.squareup.okhttp3:okhttp:3.4.2'
-    implementation 'com.squareup.okhttp3:okhttp-ws:3.4.2'
-    implementation 'org.yaml:snakeyaml:1.18:android'
-    implementation 'org.slf4j:slf4j-android:1.6.1-RC1'
 
     // di
     implementation Deps.Koin.base
