@@ -1,9 +1,5 @@
 package dev.iaiabot.thetatrial.theta
 
-import com.ricoh.camera.sdk.wireless.api.CameraDevice
-import com.ricoh.camera.sdk.wireless.api.CameraDeviceDetector
-import com.ricoh.camera.sdk.wireless.api.DeviceInterface
-
 class CameraImpl : Camera {
     lateinit var detectedDevices: List<CameraDevice>
 
