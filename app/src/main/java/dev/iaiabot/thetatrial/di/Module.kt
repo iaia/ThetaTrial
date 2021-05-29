@@ -9,6 +9,12 @@ import org.koin.dsl.module
 
 object Module {
     val appModule = module {
-        viewModel<CameraViewModel> { CameraViewModelImpl(androidContext() as Application) }
+        viewModel<CameraViewModel> {
+            CameraViewModelImpl(
+                androidContext() as Application,
+                get(),
+                get()
+            )
+        }
     }
 }

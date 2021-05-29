@@ -2,6 +2,7 @@ package dev.iaiabot.thetatrial
 
 import android.app.Application
 import dev.iaiabot.thetatrial.di.Module.appModule
+import dev.iaiabot.thetatrial.usecase.di.Module.useCaseModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
@@ -13,7 +14,12 @@ class ThetaTrialApplication: Application() {
         startKoin {
             androidLogger()
             androidContext(this@ThetaTrialApplication)
-            modules(listOf(appModule))
+            modules(
+                listOf(
+                    appModule,
+                    useCaseModule,
+                )
+            )
         }
     }
 }

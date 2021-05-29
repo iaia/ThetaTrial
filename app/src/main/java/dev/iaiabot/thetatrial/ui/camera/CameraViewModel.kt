@@ -2,9 +2,10 @@ package dev.iaiabot.thetatrial.ui.camera
 
 import android.app.Application
 import androidx.lifecycle.*
-import dev.iaiabot.thetatrial.theta.Camera
-import dev.iaiabot.thetatrial.theta.CameraImpl
+import dev.iaiabot.thetatrial.usecase.camera.ConnectCameraUseCase
+import dev.iaiabot.thetatrial.usecase.camera.TakePictureUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 abstract class CameraViewModel(application: Application) : AndroidViewModel(application),
@@ -18,25 +19,26 @@ abstract class CameraViewModel(application: Application) : AndroidViewModel(appl
 }
 
 internal class CameraViewModelImpl(
-    application: Application
+    application: Application,
+    private val connectCameraUseCase: ConnectCameraUseCase,
+    private val takePictureUseCase: TakePictureUseCase,
 ) : CameraViewModel(application) {
     override val cameraResponse = MutableLiveData<String>()
     override val imageUrl = MutableLiveData<String>()
-    override val connectedCamera = MutableLiveData<Boolean>(false)
-
-    // TODO: diする
-    private val camera: Camera = CameraImpl()
+    override val connectedCamera = MutableLiveData(false)
 
     override fun onClickConnectCamera() {
-        viewModelScope.launch(Dispatchers.IO) {
-            camera.connect(getApplication())
+        viewModelScope.launch {
+            connectCameraUseCase(getApplication()).collect {
+                connectedCamera.postValue(it)
+            }
         }
     }
 
     override fun onClickTakePicture() {
         // 操作できないようにする progressだす
         viewModelScope.launch(Dispatchers.IO) {
-            imageUrl.postValue(camera.takePicture())
+            imageUrl.postValue(takePictureUseCase())
         }
     }
 }

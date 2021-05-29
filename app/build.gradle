@@ -41,7 +41,6 @@ android {
 dependencies {
     implementation(project(":entity"))
     implementation(project(":usecase"))
-    implementation(project(":theta"))
 
     implementation Deps.Kotlin.stdLib
     implementation Deps.AndroidX.coreKtx

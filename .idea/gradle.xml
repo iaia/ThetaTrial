@@ -17,6 +17,7 @@
             <option value="$PROJECT_DIR$/repository" />
             <option value="$PROJECT_DIR$/theta" />
             <option value="$PROJECT_DIR$/usecase" />
+            <option value="$PROJECT_DIR$/util" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
