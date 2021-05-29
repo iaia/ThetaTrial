@@ -56,4 +56,6 @@ object Deps {
             "org.spekframework.spek2:spek-runner-junit5:$spek_version" // testRuntimeOnly
         val kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version" // testRuntimeOnly
     }
+
+    val picasso = "com.squareup.picasso:picasso:2.71828"
 }

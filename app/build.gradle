@@ -53,6 +53,7 @@ dependencies {
     implementation Deps.AndroidX.constraintLayout
     implementation Deps.AndroidX.navigationFragment
     implementation Deps.AndroidX.navigationUi
+    implementation Deps.picasso
 
     // di
     implementation Deps.Koin.base
