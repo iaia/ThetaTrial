@@ -26,8 +26,9 @@ class CameraImpl : Camera {
     }
 
     override fun connect(context: Context) {
-        // Q以上なので後で考える
-        forceConnectToWifi(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            forceConnectToWifi(context)
+        }
     }
 
     override suspend fun getSerialNumber(): String? {
