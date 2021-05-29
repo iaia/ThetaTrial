@@ -48,10 +48,10 @@
 
         <ImageView
             android:id="@+id/iv_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:contentDescription="@null"
-            android:src="@drawable/ic_launcher_background"
+            app:imageUrl="@{viewModel.imageUrl}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

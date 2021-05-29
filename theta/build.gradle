@@ -1,9 +1,8 @@
 import dependencies.Deps
 
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-kapt'
 }
 
 android {
@@ -11,13 +10,13 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "dev.iaiabot.thetatrial"
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
@@ -33,41 +32,22 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    buildFeatures {
-        dataBinding true
-    }
 }
 
 dependencies {
-    implementation(project(":entity"))
-    implementation(project(":usecase"))
-    implementation(project(":theta"))
-
     implementation Deps.Kotlin.stdLib
     implementation Deps.AndroidX.coreKtx
     implementation Deps.AndroidX.appCompat
-    implementation Deps.AndroidX.liveDataLifecycleKtx
-
-    // ui
-    implementation Deps.MaterialDesign.material
-    implementation Deps.AndroidX.constraintLayout
-    implementation Deps.AndroidX.navigationFragment
-    implementation Deps.AndroidX.navigationUi
-    implementation Deps.picasso
 
     // di
     implementation Deps.Koin.base
     implementation Deps.Koin.ext
 
-    // test
+    testImplementation Deps.Test.junit4
     testImplementation Deps.Test.mockk
     testImplementation Deps.Test.truth
     testImplementation Deps.Spek.spek
     testImplementation Deps.Spek.spekRunner
     testImplementation Deps.Spek.kotlinReflect
     testImplementation Deps.Kotlin.Test.coroutine
-    testImplementation Deps.AndroidX.Test.coreTesting
-
-    androidTestImplementation Deps.AndroidX.Test.extJunit
-    androidTestImplementation Deps.AndroidX.Test.espresso
 }
