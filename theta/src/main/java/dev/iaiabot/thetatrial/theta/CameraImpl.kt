@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import dev.iaiabot.thetatrial.theta.network.HttpConnector
 import dev.iaiabot.thetatrial.theta.network.HttpEventListener
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
@@ -28,19 +29,16 @@ class CameraImpl : Camera {
     override fun connect(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             forceConnectToWifi(context)
+        } else {
+            Log.d("thetatrial", "todo")
         }
     }
 
-    override suspend fun getSerialNumber(): String? {
-        return "serial number ${camera?.deviceInfo?.serialNumber}"
-    }
-
     override suspend fun takePicture(): String? {
-        return suspendCoroutine<String?> { continuation ->
+        return suspendCoroutine { continuation ->
             camera?.takePicture(
                 object : HttpEventListener {
                     override fun onCheckStatus(newStatus: Boolean) {
-                        // TODO("Not yet implemented")
                     }
 
                     override fun onObjectChanged(latestCapturedFileId: String?) {
@@ -48,18 +46,18 @@ class CameraImpl : Camera {
                     }
 
                     override fun onCompleted() {
-                        // TODO("Not yet implemented")
                     }
 
                     override fun onError(errorMessage: String?) {
-                        // TODO("Not yet implemented")
+                        continuation.resumeWithException(
+                            TakePictureException(errorMessage ?: "error")
+                        )
                     }
                 }
             )
         }
     }
 
-    // util moduleに持っていく
     @RequiresApi(Build.VERSION_CODES.Q)
     @SuppressLint("MissingPermission")
     private fun forceConnectToWifi(context: Context) {
