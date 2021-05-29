@@ -8,6 +8,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import dev.iaiabot.thetatrial.theta.network.HttpConnector
 import dev.iaiabot.thetatrial.theta.network.HttpEventListener
@@ -19,17 +20,23 @@ class CameraImpl : Camera {
     var camera: HttpConnector? = null
 
     companion object {
+        private const val THETA_IP_ADDRESS = "192.168.1.1"
         private const val WIFI_PASSWORD = "00118118"
         private const val WIFI_SSID = "THETAYP${WIFI_PASSWORD}.OSC"
     }
 
     override fun connect(context: Context) {
+        // Q以上なので後で考える
         forceConnectToWifi(context)
+    }
+
+    override suspend fun getSerialNumber(): String? {
+        return "serial number ${camera?.deviceInfo?.serialNumber}"
     }
 
     override suspend fun takePicture(): String? {
         return suspendCoroutine<String?> { continuation ->
-            val shootResult = camera?.takePicture(
+            camera?.takePicture(
                 object : HttpEventListener {
                     override fun onCheckStatus(newStatus: Boolean) {
                         // TODO("Not yet implemented")
@@ -70,11 +77,14 @@ class CameraImpl : Camera {
         manager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
-                camera = HttpConnector("192.168.1.1")
+                Log.d("thetatrial", "on available wifi")
+                manager.bindProcessToNetwork(network)
+                camera = HttpConnector(THETA_IP_ADDRESS)
             }
 
             override fun onLost(network: Network) {
                 super.onLost(network)
+                Log.d("thetatrial", "on lost wifi")
                 camera = null
             }
         })

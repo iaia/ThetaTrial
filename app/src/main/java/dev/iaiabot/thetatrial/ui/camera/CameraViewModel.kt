@@ -28,13 +28,16 @@ internal class CameraViewModelImpl(
     private val camera: Camera = CameraImpl()
 
     override fun onClickConnectCamera() {
-        camera.connect(getApplication())
-        connectedCamera.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            camera.connect(getApplication())
+        }
     }
 
     override fun onClickTakePicture() {
-        viewModelScope.launch(Dispatchers.Default) {
-            imageUrl.postValue(camera.takePicture())
+        // 操作できないようにする progressだす
+        viewModelScope.launch(Dispatchers.IO) {
+            cameraResponse.postValue(camera.getSerialNumber())
+            //cameraResponse.postValue(camera.takePicture())
         }
     }
 }
