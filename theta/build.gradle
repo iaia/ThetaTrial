@@ -45,8 +45,6 @@ dependencies {
     testImplementation Deps.Test.junit4
     testImplementation Deps.Test.mockk
     testImplementation Deps.Test.truth
-    testImplementation Deps.Spek.spek
-    testImplementation Deps.Spek.spekRunner
-    testImplementation Deps.Spek.kotlinReflect
+    testImplementation Deps.Test.kotest
     testImplementation Deps.Kotlin.Test.coroutine
 }

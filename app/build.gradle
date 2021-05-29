@@ -60,9 +60,7 @@ dependencies {
     // test
     testImplementation Deps.Test.mockk
     testImplementation Deps.Test.truth
-    testImplementation Deps.Spek.spek
-    testImplementation Deps.Spek.spekRunner
-    testImplementation Deps.Spek.kotlinReflect
+    testImplementation Deps.Test.kotest
     testImplementation Deps.Kotlin.Test.coroutine
     testImplementation Deps.AndroidX.Test.coreTesting
 

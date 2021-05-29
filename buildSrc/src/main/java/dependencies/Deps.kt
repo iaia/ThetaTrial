@@ -44,17 +44,10 @@ object Deps {
 
     object Test {
         val junit4 = "junit:junit:4.13.2"
-        private val mockk_version = "1.9.3" // spekで実行出来ないので 1.9.3 に固定
+        private val mockk_version = "1.9.3"
         val mockk = "io.mockk:mockk:$mockk_version"
         val truth = "com.google.truth:truth:1.1"
-    }
-
-    object Spek {
-        private val spek_version = "2.0.15"
-        val spek = "org.spekframework.spek2:spek-dsl-jvm:$spek_version"
-        val spekRunner =
-            "org.spekframework.spek2:spek-runner-junit5:$spek_version" // testRuntimeOnly
-        val kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version" // testRuntimeOnly
+        val kotest = "io.kotest:kotest-runner-junit5:4.6.0"
     }
 
     val picasso = "com.squareup.picasso:picasso:2.71828"
