@@ -6,7 +6,9 @@ import dev.iaiabot.thetatrial.usecase.camera.ConnectCameraUseCaseImpl
 import dev.iaiabot.thetatrial.usecase.camera.TakePictureUseCase
 import dev.iaiabot.thetatrial.usecase.camera.TakePictureUseCaseImpl
 import dev.iaiabot.thetatrial.util.di.Module.utilModule
+import kotlinx.coroutines.Dispatchers
 import org.koin.core.context.loadKoinModules
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 object Module {
@@ -14,7 +16,10 @@ object Module {
         loadKoinModules(utilModule)
         loadKoinModules(thetaModule)
 
+        factory(named("ioDispatcher")) { Dispatchers.IO }
+        factory(named("dispatcher")) { Dispatchers.Default }
+
         single<ConnectCameraUseCase> { ConnectCameraUseCaseImpl(get()) }
-        factory<TakePictureUseCase> { TakePictureUseCaseImpl(get()) }
+        factory<TakePictureUseCase> { TakePictureUseCaseImpl(get(), get(named("ioDispatcher"))) }
     }
 }

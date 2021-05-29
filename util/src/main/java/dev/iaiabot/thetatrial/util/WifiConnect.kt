@@ -67,13 +67,14 @@ internal class WifiConnectImpl : WifiConnect {
                     super.onLost(network)
                     Log.d("theta-trial", "on lost wifi")
                     trySend(WifiConnect.State.Lost)
+                    close()
                 }
             }
 
             manager.requestNetwork(request, callback)
             awaitClose {
                 Log.d("theta-trial", "wifi request close")
-                this.cancel()
+                cancel()
             }
         }
     }

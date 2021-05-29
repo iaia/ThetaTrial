@@ -24,9 +24,4 @@ class CameraFragment : Fragment() {
         viewLifecycleOwner.lifecycle.addObserver(viewModel)
         return binding.root
     }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-    }
 }
