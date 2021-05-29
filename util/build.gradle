@@ -37,7 +37,6 @@ android {
 dependencies {
     implementation Deps.Kotlin.stdLib
     implementation Deps.Kotlin.coroutine
-    implementation Deps.AndroidX.coreKtx
 
     // di
     implementation Deps.Koin.base

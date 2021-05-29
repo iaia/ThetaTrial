@@ -35,8 +35,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":entity"))
-    implementation(project(":repository"))
     implementation(project(":util"))
     implementation(project(":theta"))
 
