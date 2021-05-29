@@ -29,12 +29,30 @@ import dev.iaiabot.thetatrial.theta.model.ImageSize;
 public class HttpConnector {
     private final static long CHECK_STATUS_PERIOD_MS = 50;
     private String mIpAddress = null;
-    private String mSessionId = null;
 
     private String mContinuationToken = null;
     private String mFingerPrint = null;
     private Timer mCheckStatusTimer = null;
     private HttpEventListener mHttpEventListener = null;
+
+    /**
+     * Acquire list of media files on device
+     *
+     * @return Media file list
+     */
+    public ArrayList<ImageInfo> getList() {
+        ArrayList<ImageInfo> imageInfos = new ArrayList<>();
+
+        for (int continuation = 0; continuation < 3; continuation++) {
+            ArrayList<ImageInfo> receivedImageInfo = getListInternal(10, imageInfos.size());
+            imageInfos.addAll(receivedImageInfo);
+            if (receivedImageInfo.size() < 10) {
+                break;
+            }
+        }
+
+        return imageInfos;
+    }
 
     /**
      * Constructor
@@ -45,68 +63,12 @@ public class HttpConnector {
         mIpAddress = cameraIpAddress;
     }
 
-    /**
-     * Connect to device
-     *
-     * @return Session ID (null is returned if the connection fails)
-     */
-    private String connect() {
-        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
-        JSONObject input = new JSONObject();
-        String responseData;
-        String sessionId = null;
-        InputStream is = null;
-
-        try {
-            // send HTTP POST
-            input.put("name", "camera.startSession");
-
-            OutputStream os = postConnection.getOutputStream();
-            os.write(input.toString().getBytes());
-            postConnection.connect();
-            os.flush();
-            os.close();
-
-            is = postConnection.getInputStream();
-            responseData = InputStreamToString(is);
-
-            // parse JSON data
-            JSONObject output = new JSONObject(responseData);
-            String status = output.getString("state");
-
-            if (status.equals("done")) {
-                JSONObject results = output.getJSONObject("results");
-                sessionId = results.getString("sessionId");
-            } else if (status.equals("error")) {
-                JSONObject errors = output.getJSONObject("error");
-                String errorCode = errors.getString("code");
-                if (errorCode.equals("invalidSessionId")) {
-                    sessionId = null;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return sessionId;
-    }
 
     /**
      * Acquire storage information of device
      * @return Storage information
      */
     public StorageInfo getStorageInfo() {
-        mSessionId = connect();
 
         HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
         JSONObject input = new JSONObject();
@@ -118,7 +80,6 @@ public class HttpConnector {
             // send HTTP POST
             input.put("name", "camera.getOptions");
             JSONObject parameters = new JSONObject();
-            parameters.put("sessionId", mSessionId);
             JSONArray optionNames = new JSONArray();
             optionNames.put("remainingPictures");
             optionNames.put("remainingSpace");
@@ -169,27 +130,7 @@ public class HttpConnector {
     }
 
     /**
-     * Acquire list of media files on device
-     *
-     * @return Media file list
-     */
-    public ArrayList<ImageInfo> getList() {
-        ArrayList<ImageInfo> imageInfos = new ArrayList<>();
-
-        for (int continuation = 0; continuation < 3; continuation++) {
-            ArrayList<ImageInfo> receivedImageInfo = getListInternal(10, mContinuationToken);
-            imageInfos.addAll(receivedImageInfo);
-            if (mContinuationToken == null) {
-                break;
-            }
-        }
-
-        return imageInfos;
-    }
-
-    /**
      * Acquire device information
-     *
      * @return Device information
      */
     public DeviceInfo getDeviceInfo() {
@@ -238,10 +179,10 @@ public class HttpConnector {
      * Acquire media file list (limited number of items)
      *
      * @param maxReceiveEntry Maximum number of files that can be acquired at once
-     * @param token           Set the previously acquired token to continue. Set null if acquiring for the first time.
+     * @param startPosition   Set the previously acquired token to continue. Set null if acquiring for the first time.
      * @return List of specified number of media files
      */
-    private ArrayList<ImageInfo> getListInternal(int maxReceiveEntry, String token) {
+    private ArrayList<ImageInfo> getListInternal(int maxReceiveEntry, int startPosition) {
         HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
         JSONObject input = new JSONObject();
         String responseData;
@@ -250,12 +191,12 @@ public class HttpConnector {
 
         try {
             // send HTTP POST
-            input.put("name", "camera._listAll");
+            input.put("name", "camera.listFiles");
             JSONObject parameters = new JSONObject();
             parameters.put("entryCount", maxReceiveEntry);
-            if (token != null) {
-                parameters.put("continuationToken", token);
-            }
+            parameters.put("fileType", "all");
+            parameters.put("maxThumbSize", 0);
+            parameters.put("startPosition", startPosition);
             input.put("parameters", parameters);
 
             OutputStream os = postConnection.getOutputStream();
@@ -288,14 +229,11 @@ public class HttpConnector {
                     String name = entry.getString("name");
                     imageInfo.setFileName(name);
 
-                    String id = entry.getString("uri");
+                    String id = entry.getString("fileUrl");
                     imageInfo.setFileId(id);
 
                     long size = Long.parseLong(entry.getString("size"));
                     imageInfo.setFileSize(size);
-
-                    String date = entry.getString("dateTimeZone");
-                    imageInfo.setCaptureDate(date);
 
                     int width = entry.getInt("width");
                     imageInfo.setWidth(width);
@@ -304,7 +242,7 @@ public class HttpConnector {
                     imageInfo.setHeight(height);
 
                     try {
-                        entry.getInt("recordTime");
+                        entry.getInt("_recordTime");
                         imageInfo.setFileFormat(ImageInfo.FILE_FORMAT_CODE_EXIF_MPEG);
                     } catch (JSONException e) {
                         imageInfo.setFileFormat(ImageInfo.FILE_FORMAT_CODE_EXIF_JPEG);
@@ -332,36 +270,28 @@ public class HttpConnector {
 
     /**
      * Acquire thumbnail image
-     *
      * @param fileId File ID
      * @return Thumbnail (null is returned if acquisition fails)
      */
     public Bitmap getThumb(String fileId) {
-        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
+        HttpURLConnection postConnection = null;
+        try {
+            postConnection = (HttpURLConnection) new URL(fileId + "?type=thumb").openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         JSONObject input = new JSONObject();
         Bitmap thumbnail = null;
         InputStream is = null;
 
         try {
-            // send HTTP POST
-            input.put("name", "camera.getImage");
-            JSONObject parameters = new JSONObject();
-            parameters.put("fileUri", fileId);
-            parameters.put("_type", "thumb");
-            input.put("parameters", parameters);
-
-            OutputStream os = postConnection.getOutputStream();
-            os.write(input.toString().getBytes());
+            // send HTTP GET
             postConnection.connect();
-            os.flush();
-            os.close();
 
             is = postConnection.getInputStream();
             BufferedInputStream bis = new BufferedInputStream(is);
             thumbnail = BitmapFactory.decodeStream(bis);
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
             e.printStackTrace();
         } finally {
             if (is != null) {
@@ -385,15 +315,8 @@ public class HttpConnector {
     public ShootResult takePicture(HttpEventListener listener) {
         ShootResult result = ShootResult.FAIL_DEVICE_BUSY;
 
-        mSessionId = connect();
-        if (mSessionId == null) {
-            listener.onError("cannot get to start session");
-            result = ShootResult.FAIL_DEVICE_BUSY;
-            return result;
-        }
-
         // set capture mode to image
-        String errorMessage = setImageCaptureMode(mSessionId);
+        String errorMessage = setImageCaptureMode();
         if (errorMessage != null) {
             listener.onError(errorMessage);
             result = ShootResult.FAIL_DEVICE_BUSY;
@@ -409,9 +332,6 @@ public class HttpConnector {
         try {
             // send HTTP POST
             input.put("name", "camera.takePicture");
-            JSONObject parameters = new JSONObject();
-            parameters.put("sessionId", mSessionId);
-            input.put("parameters", parameters);
 
             OutputStream os = postConnection.getOutputStream();
             os.write(input.toString().getBytes());
@@ -491,7 +411,7 @@ public class HttpConnector {
 
             if (status.equals("done")) {
                 JSONObject results = output.getJSONObject("results");
-                capturedFileId = results.getString("fileUri");
+                capturedFileId = results.getString("fileUrl");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -512,31 +432,24 @@ public class HttpConnector {
 
     /**
      * Acquire raw data of specified image
-     *
-     * @param fileId   File ID
+     * @param fileId File ID
      * @param listener Listener for receiving received data count
      * @return Image data
      */
     public ImageData getImage(String fileId, HttpDownloadListener listener) {
-        HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
-        JSONObject input = new JSONObject();
+        HttpURLConnection postConnection = null;
+        try {
+            postConnection = (HttpURLConnection) new URL(fileId).openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         ImageData imageData = new ImageData();
         int totalSize = 0;
         InputStream is = null;
 
         try {
-            // send HTTP POST
-            input.put("name", "camera.getImage");
-            JSONObject parameters = new JSONObject();
-            parameters.put("fileUri", fileId);
-            parameters.put("_type", "full");
-            input.put("parameters", parameters);
-
-            OutputStream os = postConnection.getOutputStream();
-            os.write(input.toString().getBytes());
+            // send HTTP GET
             postConnection.connect();
-            os.flush();
-            os.close();
 
             totalSize = postConnection.getContentLength();
             listener.onTotalSize(totalSize);
@@ -557,8 +470,6 @@ public class HttpConnector {
             imageData.setRoll(xmp.getPoseRollDegrees());
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
         } finally {
             if (is != null) {
                 try {
@@ -578,10 +489,9 @@ public class HttpConnector {
      * @throws IOException
      */
     public InputStream getLivePreview() throws IOException, JSONException {
-        mSessionId = connect();
 
         // set capture mode to image
-        setImageCaptureMode(mSessionId);
+        setImageCaptureMode();
 
         HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
         JSONObject input = new JSONObject();
@@ -589,10 +499,8 @@ public class HttpConnector {
 
         try {
             // send HTTP POST
-            input.put("name", "camera._getLivePreview");
+            input.put("name", "camera.getLivePreview");
             JSONObject parameters = new JSONObject();
-            parameters.put("sessionId", mSessionId);
-            input.put("parameters", parameters);
 
             OutputStream os = postConnection.getOutputStream();
             os.write(input.toString().getBytes());
@@ -636,15 +544,13 @@ public class HttpConnector {
 
     /**
      * Delete specified file
-     *
      * @param deletedFileId File ID
-     * @param listener      Listener for receiving deletion results
+     * @param listener Listener for receiving deletion results
      */
     public void deleteFile(String deletedFileId, HttpEventListener listener) {
-        mSessionId = connect();
 
         // set capture mode to image
-        String errorMessage = setImageCaptureMode(mSessionId);
+        String errorMessage = setImageCaptureMode();
         if (errorMessage != null) {
             listener.onError(errorMessage);
             return;
@@ -704,14 +610,12 @@ public class HttpConnector {
 
     /**
      * Acquire currently set shooting size
-     *
      * @return Shooting size (null is returned if acquisition fails)
      */
     public ImageSize getImageSize() {
-        mSessionId = connect();
 
         // set capture mode to image
-        setImageCaptureMode(mSessionId);
+        setImageCaptureMode();
 
         HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
         JSONObject input = new JSONObject();
@@ -723,7 +627,6 @@ public class HttpConnector {
             // send HTTP POST
             input.put("name", "camera.getOptions");
             JSONObject parameters = new JSONObject();
-            parameters.put("sessionId", mSessionId);
             JSONArray optionNames = new JSONArray();
             optionNames.put("fileFormat");
             parameters.put("optionNames", optionNames);
@@ -773,7 +676,6 @@ public class HttpConnector {
 
     /**
      * Specify shooting size
-     *
      * @param imageSize Shooting size
      */
     public void setImageSize(ImageSize imageSize) {
@@ -790,10 +692,9 @@ public class HttpConnector {
                 height = 2688;
                 break;
         }
-        mSessionId = connect();
 
         // set capture mode to image
-        setImageCaptureMode(mSessionId);
+        setImageCaptureMode();
 
         HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
         JSONObject input = new JSONObject();
@@ -804,7 +705,6 @@ public class HttpConnector {
             // send HTTP POST
             input.put("name", "camera.setOptions");
             JSONObject parameters = new JSONObject();
-            parameters.put("sessionId", mSessionId);
             JSONObject options = new JSONObject();
             JSONObject fileFormat = new JSONObject();
             fileFormat.put("type", "jpeg");
@@ -840,10 +740,9 @@ public class HttpConnector {
     /**
      * Set still image as shooting mode
      *
-     * @param sessionId Session ID
      * @return Error message (null is returned if successful)
      */
-    private String setImageCaptureMode(String sessionId) {
+    private String setImageCaptureMode() {
         HttpURLConnection postConnection = createHttpConnection("POST", "/osc/commands/execute");
         JSONObject input = new JSONObject();
         String responseData;
@@ -854,7 +753,6 @@ public class HttpConnector {
             // send HTTP POST
             input.put("name", "camera.setOptions");
             JSONObject parameters = new JSONObject();
-            parameters.put("sessionId", sessionId);
             JSONObject options = new JSONObject();
             options.put("captureMode", "image");
             parameters.put("options", options);
@@ -919,9 +817,8 @@ public class HttpConnector {
 
     /**
      * Generate HTTP connection
-     *
      * @param method Method
-     * @param path   Path
+     * @param path Path
      * @return HTTP Connection instance
      */
     private HttpURLConnection createHttpConnection(String method, String path) {
@@ -975,7 +872,6 @@ public class HttpConnector {
 
     /**
      * Acquire device status
-     *
      * @return Last saved file
      */
     private String getState() {

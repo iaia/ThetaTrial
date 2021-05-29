@@ -36,8 +36,7 @@ internal class CameraViewModelImpl(
     override fun onClickTakePicture() {
         // 操作できないようにする progressだす
         viewModelScope.launch(Dispatchers.IO) {
-            cameraResponse.postValue(camera.getSerialNumber())
-            //cameraResponse.postValue(camera.takePicture())
+            cameraResponse.postValue(camera.takePicture())
         }
     }
 }
