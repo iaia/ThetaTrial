@@ -1,6 +1,8 @@
 package dev.iaiabot.thetatrial.theta
 
+import android.content.Context
+
 interface Camera {
-    fun connect()
-    fun takePicture(): String?
+    fun connect(context: Context)
+    suspend fun takePicture(): String?
 }

@@ -3,8 +3,6 @@ package dev.iaiabot.thetatrial.theta.network;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.theta360.sample.v2.model.ImageSize;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +20,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import dev.iaiabot.thetatrial.theta.model.ImageSize;
 
 /**
  * HTTP connection to device

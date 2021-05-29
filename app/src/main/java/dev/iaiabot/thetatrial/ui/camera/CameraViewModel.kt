@@ -1,13 +1,14 @@
 package dev.iaiabot.thetatrial.ui.camera
 
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.*
 import dev.iaiabot.thetatrial.theta.Camera
 import dev.iaiabot.thetatrial.theta.CameraImpl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-abstract class CameraViewModel : ViewModel(), LifecycleObserver {
+abstract class CameraViewModel(application: Application) : AndroidViewModel(application),
+    LifecycleObserver {
     abstract val cameraResponse: LiveData<String>
     abstract val imageUrl: LiveData<String>
     abstract val connectedCamera: LiveData<Boolean>
@@ -17,7 +18,8 @@ abstract class CameraViewModel : ViewModel(), LifecycleObserver {
 }
 
 internal class CameraViewModelImpl(
-) : CameraViewModel() {
+    application: Application
+) : CameraViewModel(application) {
     override val cameraResponse = MutableLiveData<String>()
     override val imageUrl = MutableLiveData<String>()
     override val connectedCamera = MutableLiveData<Boolean>(false)
@@ -26,11 +28,13 @@ internal class CameraViewModelImpl(
     private val camera: Camera = CameraImpl()
 
     override fun onClickConnectCamera() {
-        camera.connect()
+        camera.connect(getApplication())
         connectedCamera.value = true
     }
 
     override fun onClickTakePicture() {
-        imageUrl.value = camera.takePicture()
+        viewModelScope.launch(Dispatchers.Default) {
+            imageUrl.postValue(camera.takePicture())
+        }
     }
 }
