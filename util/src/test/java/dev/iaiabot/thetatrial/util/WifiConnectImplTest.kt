@@ -7,6 +7,7 @@ import io.mockk.mockk
 internal class WifiConnectImplTest : DescribeSpec({
     val wifiConnect: WifiConnect = WifiConnectImpl()
 
+    // mockが大量に必要でめんどくさいので一旦やらない
     xdescribe("#connect") {
         val context: Context = mockk()
 
