@@ -44,8 +44,9 @@ object Deps {
 
     object Test {
         val junit4 = "junit:junit:4.13.2"
-        private val mockk_version = "1.9.3"
+        private val mockk_version = "1.11.0"
         val mockk = "io.mockk:mockk:$mockk_version"
+        val mockkAgent = "io.mockk:mockk-agent-jvm:$mockk_version"
         val truth = "com.google.truth:truth:1.1"
         val kotest = "io.kotest:kotest-runner-junit5:4.6.0"
     }

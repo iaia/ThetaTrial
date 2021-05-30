@@ -8,17 +8,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 
-class CameraImpl : Camera {
+class CameraImpl(
+    private val httpConnector: HttpConnector
+) : Camera {
 
-    companion object {
-        private const val THETA_IP_ADDRESS = "192.168.1.1"
-    }
-
-    private val camera: HttpConnector = HttpConnector(THETA_IP_ADDRESS)
-
-    override suspend fun takePicture(): Flow<Camera.Response> {
+    override fun takePicture(): Flow<Camera.Response> {
         return callbackFlow<Camera.Response> {
-            val shootResult = camera.takePicture(
+            val shootResult = httpConnector.takePicture(
                 object : HttpEventListener {
                     override fun onCheckStatus(newStatus: Boolean) {
                     }
@@ -31,7 +27,7 @@ class CameraImpl : Camera {
                     }
 
                     override fun onCompleted() {
-                        Camera.Response.Other("completed")
+                        trySend(Camera.Response.Other("completed"))
                         this@callbackFlow.close()
                     }
 
@@ -43,9 +39,7 @@ class CameraImpl : Camera {
             )
             send(Camera.Response.Other(shootResult.name))
 
-            awaitClose {
-                cancel()
-            }
+            awaitClose { }
         }
     }
 }

@@ -9,7 +9,6 @@ import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -53,8 +52,9 @@ internal class WifiConnectImpl : WifiConnect {
             setNetworkSpecifier(specifier)
         }.build()
 
-        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return callbackFlow {
+            val manager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val callback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
                     super.onAvailable(network)
@@ -74,7 +74,6 @@ internal class WifiConnectImpl : WifiConnect {
             manager.requestNetwork(request, callback)
             awaitClose {
                 Log.d("theta-trial", "wifi request close")
-                cancel()
             }
         }
     }
