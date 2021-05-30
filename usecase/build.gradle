@@ -32,6 +32,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+        }
+    }
 }
 
 dependencies {
@@ -47,6 +53,7 @@ dependencies {
 
     testImplementation Deps.Test.junit4
     testImplementation Deps.Test.mockk
+    testImplementation Deps.Test.mockkAgent
     testImplementation Deps.Test.truth
     testImplementation Deps.Test.kotest
     testImplementation Deps.Kotlin.Test.coroutine

@@ -26,7 +26,7 @@ internal class TakePictureUseCaseImpl(
 ) : TakePictureUseCase {
 
     override val fileUrl = MutableLiveData<String?>(null)
-    override val response = MutableSharedFlow<String?>()
+    override val response = MutableSharedFlow<String?>(replay = 1)
 
     override fun invoke(
         coroutineScope: CoroutineScope,
