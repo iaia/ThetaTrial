@@ -36,6 +36,12 @@ android {
     buildFeatures {
         dataBinding true
     }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+        }
+    }
 }
 
 dependencies {

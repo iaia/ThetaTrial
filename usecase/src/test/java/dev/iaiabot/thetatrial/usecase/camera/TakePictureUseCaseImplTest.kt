@@ -3,6 +3,7 @@ package dev.iaiabot.thetatrial.usecase.camera
 import com.google.common.truth.Truth.assertThat
 import dev.iaiabot.thetatrial.theta.Camera
 import dev.iaiabot.thetatrial.theta.TakePictureException
+import dev.iaiabot.thetatrial.usecase.instantTaskExecutorRule
 import io.kotest.core.spec.style.DescribeSpec
 import io.mockk.every
 import io.mockk.mockk
