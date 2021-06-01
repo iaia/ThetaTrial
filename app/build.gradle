@@ -70,7 +70,9 @@ dependencies {
     testImplementation Deps.Kotlin.Test.coroutine
     testImplementation Deps.AndroidX.Test.coreTesting
 
+    // androidTest
     debugImplementation Deps.AndroidX.Test.fragment
     androidTestImplementation Deps.AndroidX.Test.extJunit
     androidTestImplementation Deps.AndroidX.Test.espresso
+    androidTestImplementation Deps.AndroidX.Test.uiAutomator
 }

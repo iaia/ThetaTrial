@@ -30,6 +30,7 @@ object Deps {
             val extJunit = "androidx.test.ext:junit:1.1.2"
             val espresso = "androidx.test.espresso:espresso-core:3.3.0"
             val fragment = "androidx.fragment:fragment-testing:1.3.4"
+            val uiAutomator = "androidx.test.uiautomator:uiautomator:2.2.0"
         }
     }
 
