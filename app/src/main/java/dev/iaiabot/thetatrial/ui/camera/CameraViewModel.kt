@@ -1,7 +1,9 @@
 package dev.iaiabot.thetatrial.ui.camera
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.*
+import dev.iaiabot.thetatrial.R
 import dev.iaiabot.thetatrial.usecase.camera.ConnectCameraUseCase
 import dev.iaiabot.thetatrial.usecase.camera.TakePictureUseCase
 import kotlinx.coroutines.flow.collect
@@ -26,6 +28,9 @@ internal class CameraViewModelImpl(
     override val imageUrl = takePictureUseCase.fileUrl
     override val connectedCamera = MutableLiveData(false)
 
+    private val context: Context
+        get() = getApplication<Application>().applicationContext
+
     override fun onClickConnectCamera() {
         viewModelScope.launch {
             connectCameraUseCase(getApplication()).collect {
@@ -37,7 +42,16 @@ internal class CameraViewModelImpl(
     override fun onClickTakePicture() {
         viewModelScope.launch {
             takePictureUseCase.response.collect {
-                cameraResponse.postValue(it)
+                if (imageUrl.value == null) {
+                    cameraResponse.postValue(
+                        context.getString(
+                            R.string.take_picture_error_message,
+                            it
+                        )
+                    )
+                } else {
+                    cameraResponse.postValue(it)
+                }
             }
         }
         takePictureUseCase(viewModelScope)

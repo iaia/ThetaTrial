@@ -2,4 +2,5 @@
     <string name="app_name">ThetaTrial</string>
     <string name="connect_camera">カメラに接続</string>
     <string name="take_picture">写真撮影</string>
+    <string name="take_picture_error_message">写真撮影に失敗しました。再度お試しください。\nエラーメッセージ: %1$s</string>
 </resources>
