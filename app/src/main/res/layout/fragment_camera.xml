@@ -21,7 +21,7 @@
             android:id="@+id/mb_connect_camera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="カメラに接続"
+            android:text="@string/connect_camera"
             android:enabled="@{!viewModel.connectedCamera}"
             android:onClick="@{() -> viewModel.onClickConnectCamera()}"
             app:layout_constraintEnd_toEndOf="parent"
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:enabled="@{viewModel.connectedCamera}"
             android:onClick="@{() -> viewModel.onClickTakePicture()}"
-            android:text="写真撮影"
+            android:text="@string/take_picture"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/mb_connect_camera" />
